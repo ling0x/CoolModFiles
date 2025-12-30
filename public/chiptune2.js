@@ -1,8 +1,8 @@
-const OPENMPT_MODULE_RENDER_MASTERGAIN_MILLIBEL = 1;
+const OPENMPT_MODULE_RENDER_MASTERGAIN_MILLIBEL = 1
 
 var libopenmpt = {};
 
-libopenmpt.locateFile = function (name) {
+libopenmpt.locateFile = function(name) {
   return `../bin/${name}`;
 };
 
@@ -23,10 +23,10 @@ function ChiptuneJsPlayer(config) {
   this.touchLocked = true;
 }
 
-ChiptuneJsPlayer.prototype.fireEvent = function (eventName, response) {
+ChiptuneJsPlayer.prototype.fireEvent = function(eventName, response) {
   var handlers = this.handlers;
   if (handlers.length) {
-    handlers.forEach(function (handler) {
+    handlers.forEach(function(handler) {
       if (handler.eventName === eventName) {
         handler.handler(response);
       }
@@ -34,21 +34,21 @@ ChiptuneJsPlayer.prototype.fireEvent = function (eventName, response) {
   }
 };
 
-ChiptuneJsPlayer.prototype.addHandler = function (eventName, handler) {
+ChiptuneJsPlayer.prototype.addHandler = function(eventName, handler) {
   this.handlers.push({ eventName: eventName, handler: handler });
 };
 
-ChiptuneJsPlayer.prototype.onEnded = function (handler) {
+ChiptuneJsPlayer.prototype.onEnded = function(handler) {
   this.addHandler("onEnded", handler);
 };
 
-ChiptuneJsPlayer.prototype.onError = function (handler) {
+ChiptuneJsPlayer.prototype.onError = function(handler) {
   this.addHandler("onError", handler);
 };
 
-ChiptuneJsPlayer.prototype.duration = function () {
+ChiptuneJsPlayer.prototype.duration = function() {
   return libopenmpt._openmpt_module_get_duration_seconds(
-    this.currentPlayingNode.modulePtr,
+    this.currentPlayingNode.modulePtr
   );
 };
 
@@ -56,59 +56,59 @@ ChiptuneJsPlayer.prototype.duration = function () {
  * Get the libopenmpt version number.
  * Returns the libopenmpt version number.
  */
-ChiptuneJsPlayer.prototype.getLibraryVersion = function () {
+ChiptuneJsPlayer.prototype.getLibraryVersion = function() {
   // The value represents (major << 24 + minor << 16 + patch << 0).
   const libVer = libopenmpt._openmpt_get_library_version();
-  return `OpenMPT Lib v${libVer >> 24}.${(libVer >> 16) & 0xff}.${libVer & 0xffff}`;
-};
+  return `OpenMPT Lib v${libVer >> 24}.${libVer >> 16 & 0xFF}.${libVer & 0xFFFF}`;
+}
 
 /**
  * Get the core version number.
  * Return the OpenMPT core version number.
  */
-ChiptuneJsPlayer.prototype.getCoreVersion = function () {
+ChiptuneJsPlayer.prototype.getCoreVersion = function() {
   // The value represents (majormajor << 24 + major << 16 + minor << 8 + minorminor).
   const libVer = libopenmpt._openmpt_get_core_version();
-  return `OpenMPT Core v${libVer >> 24}.${(libVer >> 16) & 0xff}.${(libVer >> 8) & 0xff}.${libVer & 0xff}`;
-};
+  return `OpenMPT Core v${libVer >> 24}.${libVer >> 16 & 0xFF}.${libVer >> 8 & 0xFF}.${libVer & 0xFF}`;
+}
 
 /**
  * Set approximate current song position.
  * @param position Seconds to seek to. If seconds is out of range, the position
  * gets set to song start or end respectively.
  */
-ChiptuneJsPlayer.prototype.seek = function (position) {
+ChiptuneJsPlayer.prototype.seek = function(position) {
   libopenmpt._openmpt_module_set_position_seconds(
     this.currentPlayingNode.modulePtr,
-    position,
+    position
   );
 };
 
-ChiptuneJsPlayer.prototype.getPosition = function () {
+ChiptuneJsPlayer.prototype.getPosition = function() {
   return libopenmpt._openmpt_module_get_position_seconds(
-    this.currentPlayingNode.modulePtr,
+    this.currentPlayingNode.modulePtr
   );
 };
 
-ChiptuneJsPlayer.prototype.metadata = function () {
+ChiptuneJsPlayer.prototype.metadata = function() {
   var module = this.currentPlayingNode.modulePtr;
   var data = {};
   var keys = UTF8ToString(
-    libopenmpt._openmpt_module_get_metadata_keys(module),
+    libopenmpt._openmpt_module_get_metadata_keys(module)
   ).split(";");
   var keyNameBuffer = 0;
   for (var i = 0; i < keys.length; i++) {
     keyNameBuffer = libopenmpt._malloc(keys[i].length + 1);
     writeAsciiToMemory(keys[i], keyNameBuffer);
     data[keys[i]] = UTF8ToString(
-      libopenmpt._openmpt_module_get_metadata(module, keyNameBuffer),
+      libopenmpt._openmpt_module_get_metadata(module, keyNameBuffer)
     );
     libopenmpt._free(keyNameBuffer);
   }
   return data;
 };
 
-ChiptuneJsPlayer.prototype.unlock = function () {
+ChiptuneJsPlayer.prototype.unlock = function() {
   var context = this.context;
   var buffer = context.createBuffer(1, 1, 22050);
   var unlockSource = context.createBufferSource();
@@ -118,27 +118,27 @@ ChiptuneJsPlayer.prototype.unlock = function () {
   this.touchLocked = false;
 };
 
-ChiptuneJsPlayer.prototype.load = function (url) {
+ChiptuneJsPlayer.prototype.load = function(url) {
   if (this.touchLocked) {
     this.unlock();
   }
   var player = this;
   return fetch(url, {
-    method: "GET",
+    method: "GET"
   })
-    .then((response) => {
+    .then(response => {
       return response.arrayBuffer();
     })
-    .then((buffer) => {
+    .then(buffer => {
       return Promise.resolve(buffer);
     })
-    .catch((error) => {
+    .catch(error => {
       player.fireEvent("onError", { type: "onxhr" });
       return Promise.reject(new Error(error));
     });
 };
 
-ChiptuneJsPlayer.prototype.play = function (buffer) {
+ChiptuneJsPlayer.prototype.play = function(buffer) {
   this.stop();
   var processNode = this.createLibopenmptNode(buffer, this.config);
   if (processNode == null) {
@@ -146,7 +146,7 @@ ChiptuneJsPlayer.prototype.play = function (buffer) {
   }
   libopenmpt._openmpt_module_set_repeat_count(
     processNode.modulePtr,
-    this.config.repeatCount,
+    this.config.repeatCount
   );
   this.currentPlayingNode = processNode;
   processNode.connect(this.context.destination);
@@ -157,7 +157,7 @@ ChiptuneJsPlayer.prototype.play = function (buffer) {
  * @param volume [0..100],
  */
 ChiptuneJsPlayer.prototype.setVolume = function (volume) {
-  this.config.volume = volume;
+  this.config.volume = volume
   if (this.currentPlayingNode != null) {
     libopenmpt._openmpt_module_set_render_param(
       this.currentPlayingNode.modulePtr,
@@ -175,13 +175,13 @@ ChiptuneJsPlayer.prototype.stop = function () {
   }
 };
 
-ChiptuneJsPlayer.prototype.pause = function () {
+ChiptuneJsPlayer.prototype.pause = function() {
   if (this.currentPlayingNode != null) {
     this.currentPlayingNode.pause();
   }
 };
 
-ChiptuneJsPlayer.prototype.togglePause = function () {
+ChiptuneJsPlayer.prototype.togglePause = function() {
   if (this.currentPlayingNode != null) {
     this.currentPlayingNode.togglePause();
   }
@@ -194,11 +194,11 @@ ChiptuneJsPlayer.prototype.togglePause = function () {
  * <li> 0: play once, repeat zero times (the default)
  * <li> n>0: play once and repeat n times after that
  */
-ChiptuneJsPlayer.prototype.setRepeatCount = function (repeatCount) {
+ChiptuneJsPlayer.prototype.setRepeatCount = function(repeatCount) {
   this.config.repeatCount = repeatCount;
   libopenmpt._openmpt_module_set_repeat_count(
     this.currentPlayingNode.modulePtr,
-    repeatCount,
+    repeatCount
   );
 };
 
@@ -210,7 +210,7 @@ ChiptuneJsPlayer.prototype.setRepeatCount = function (repeatCount) {
  */
 ChiptuneJsPlayer.prototype.getNumSubsongs = function () {
   return libopenmpt._openmpt_module_get_num_subsongs(
-    this.currentPlayingNode.modulePtr,
+    this.currentPlayingNode.modulePtr
   );
 };
 
@@ -221,11 +221,11 @@ ChiptuneJsPlayer.prototype.getNumSubsongs = function () {
 ChiptuneJsPlayer.prototype.selectSubsong = function (subsong) {
   libopenmpt._openmpt_module_select_subsong(
     this.currentPlayingNode.modulePtr,
-    subsong,
+    subsong
   );
 };
 
-ChiptuneJsPlayer.prototype.createLibopenmptNode = function (buffer, config) {
+ChiptuneJsPlayer.prototype.createLibopenmptNode = function(buffer, config) {
   const maxFramesPerChunk = 4096;
   var processNode = this.context.createScriptProcessor(2048, 0, 2);
   processNode.config = config;
@@ -238,7 +238,7 @@ ChiptuneJsPlayer.prototype.createLibopenmptNode = function (buffer, config) {
     byteArray.byteLength,
     0,
     0,
-    0,
+    0
   );
   libopenmpt._openmpt_module_set_render_param(
     processNode.modulePtr,
@@ -247,24 +247,24 @@ ChiptuneJsPlayer.prototype.createLibopenmptNode = function (buffer, config) {
   );
   libopenmpt._openmpt_module_set_repeat_count(
     processNode.modulePtr,
-    config.repeatCount,
+    config.repeatCount
   );
   var stack = stackSave();
   libopenmpt._openmpt_module_ctl_set(
     processNode.modulePtr,
     asciiToStack("render.resampler.emulate_amiga"),
-    asciiToStack("1"),
+    asciiToStack("1")
   );
   libopenmpt._openmpt_module_ctl_set(
     processNode.modulePtr,
     asciiToStack("render.resampler.emulate_amiga_type"),
-    asciiToStack("a1200"),
+    asciiToStack("a1200")
   );
   stackRestore(stack);
   processNode.paused = false;
   processNode.leftBufferPtr = libopenmpt._malloc(4 * maxFramesPerChunk);
   processNode.rightBufferPtr = libopenmpt._malloc(4 * maxFramesPerChunk);
-  processNode.cleanup = function () {
+  processNode.cleanup = function() {
     if (this.modulePtr !== 0) {
       libopenmpt._openmpt_module_destroy(this.modulePtr);
       this.modulePtr = 0;
@@ -279,24 +279,24 @@ ChiptuneJsPlayer.prototype.createLibopenmptNode = function (buffer, config) {
     }
   };
 
-  processNode.stop = function () {
+  processNode.stop = function() {
     this.disconnect();
     this.cleanup();
   };
 
-  processNode.pause = function () {
+  processNode.pause = function() {
     this.paused = true;
   };
 
-  processNode.unpause = function () {
+  processNode.unpause = function() {
     this.paused = false;
   };
 
-  processNode.togglePause = function () {
+  processNode.togglePause = function() {
     this.paused = !this.paused;
   };
 
-  processNode.onaudioprocess = function (e) {
+  processNode.onaudioprocess = function(e) {
     var outputL = e.outputBuffer.getChannelData(0);
     var outputR = e.outputBuffer.getChannelData(1);
     var framesToRender = outputL.length;
@@ -326,7 +326,7 @@ ChiptuneJsPlayer.prototype.createLibopenmptNode = function (buffer, config) {
         this.context.sampleRate,
         framesPerChunk,
         this.leftBufferPtr,
-        this.rightBufferPtr,
+        this.rightBufferPtr
       );
       if (actualFramesPerChunk === 0) {
         ended = true;
@@ -334,11 +334,11 @@ ChiptuneJsPlayer.prototype.createLibopenmptNode = function (buffer, config) {
       }
       var rawAudioLeft = libopenmpt.HEAPF32.subarray(
         this.leftBufferPtr / 4,
-        this.leftBufferPtr / 4 + actualFramesPerChunk,
+        this.leftBufferPtr / 4 + actualFramesPerChunk
       );
       var rawAudioRight = libopenmpt.HEAPF32.subarray(
         this.rightBufferPtr / 4,
-        this.rightBufferPtr / 4 + actualFramesPerChunk,
+        this.rightBufferPtr / 4 + actualFramesPerChunk
       );
       for (var i = 0; i < actualFramesPerChunk; ++i) {
         outputL[framesRendered + i] = rawAudioLeft[i];
@@ -377,15 +377,14 @@ function percToMillibel(perc) {
     mB = -6000;
   } else if (perc <= 80) {
     // 0..80% = -6000..0 millibel
-    mB = Math.round(
-      (100 * 20 * Math.log(perc * (100 / 80) * 0.01)) / Math.log(10),
+    mB = Math.round(100 *
+      20 * Math.log(perc * (100 / 80) * 0.01) / Math.log(10)
     );
   } else if (perc <= 100) {
     // 80..100% = 0..1000 millibel
     // 10 db ~= 316.227766%
-    mB = Math.round(
-      (100 * 20 * Math.log((100 + ((perc - 80) / 20) * 216.227766) * 0.01)) /
-        Math.log(10),
+    mB = Math.round(100 *
+      20 * Math.log((100 + (perc - 80) / 20 * 216.227766) * 0.01) / Math.log(10)
     );
   }
 

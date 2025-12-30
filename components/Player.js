@@ -13,21 +13,23 @@ import { ToastContainer } from "react-toastify";
 import { useInterval, useKeyPress } from "../hooks";
 import { generateEmbedString, getRandomInt, showToast } from "../utils";
 import { DownloadButton } from "../icons";
-const DEFAULT_VOLUME = 80;
+const DEFAULT_VOLUME = 80
 function Player({ sharedTrackId, backSideContent, latestId, sharedTrackUrl }) {
   const [isPlay, setIsPlay] = React.useState(false);
   const [player, setPlayer] = React.useState(null);
   const [volume, setVolume] = React.useState(() => {
     const rememberedVolume = parseInt(localStorage.getItem("volume"));
-    if (rememberedVolume > -1) return rememberedVolume;
+    if(rememberedVolume > -1) return rememberedVolume
     return DEFAULT_VOLUME;
   });
   const [unmuteVolume, setUnmuteVolume] = React.useState(DEFAULT_VOLUME);
   const [maxId] = React.useState(latestId);
   const [trackId, setTrackId] = React.useState(
-    sharedTrackId || getRandomInt(0, latestId),
+    sharedTrackId || getRandomInt(0, latestId)
   );
-  const [trackUrl, setTrackUrl] = React.useState(sharedTrackUrl || null);
+  const [trackUrl, setTrackUrl] = React.useState(
+    sharedTrackUrl || null
+  );
   const [metaData, setMetaData] = React.useState({});
   const [loading, setLoading] = React.useState(true);
   const [title, setTitle] = React.useState("Loading...");
@@ -92,7 +94,7 @@ function Player({ sharedTrackId, backSideContent, latestId, sharedTrackUrl }) {
     if (helpKey || quitKey) toggleHelpDrawer();
     if (repeatKey) {
       showToast(`repeat ${!repeat ? "on" : "off"}`);
-      player.setRepeatCount(!repeat ? -1 : 0);
+      player.setRepeatCount(!repeat ? -1 : 0)
       setRepeat(!repeat);
     }
     if (downloadKey) downloadTrack();
@@ -148,16 +150,14 @@ function Player({ sharedTrackId, backSideContent, latestId, sharedTrackUrl }) {
         }
       }
     },
-    isPlay ? 500 : null,
+    isPlay ? 500 : null
   );
 
   React.useEffect(() => {
-    const jsPlayer = new ChiptuneJsPlayer(
-      new ChiptuneJsConfig(repeat ? -1 : 0, volume),
-    );
+    const jsPlayer = new ChiptuneJsPlayer(new ChiptuneJsConfig(repeat ? -1 : 0, volume));
     setPlayer(jsPlayer);
-    console.log("%c " + jsPlayer.getLibraryVersion(), "color: red");
-    console.log("%c " + jsPlayer.getCoreVersion(), "color: red");
+    console.log("%c " + jsPlayer.getLibraryVersion(), "color: red")
+    console.log("%c " + jsPlayer.getCoreVersion(), "color: red")
   }, []);
 
   React.useEffect(() => {
@@ -280,7 +280,7 @@ function Player({ sharedTrackId, backSideContent, latestId, sharedTrackUrl }) {
   const downloadTrack = async () => {
     try {
       const res = await fetch(
-        `https://api.modarchive.org/downloads.php?moduleid=${trackId}`,
+        `https://api.modarchive.org/downloads.php?moduleid=${trackId}`
       );
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -314,7 +314,7 @@ function Player({ sharedTrackId, backSideContent, latestId, sharedTrackUrl }) {
 
   const removeFavoriteModRuntime = (modToRemoveFromRuntimeList) => {
     let newFavoriteModsArray = favoriteModsRuntime.filter(
-      (mod) => mod.id !== modToRemoveFromRuntimeList,
+      (mod) => mod.id !== modToRemoveFromRuntimeList
     );
     setFavoriteModsRuntime(newFavoriteModsArray);
     localStorage.setItem("favoriteMods", JSON.stringify(newFavoriteModsArray));
@@ -327,8 +327,8 @@ function Player({ sharedTrackId, backSideContent, latestId, sharedTrackUrl }) {
     const mods = zip.folder("mods");
     for (let mod of favoriteModsRuntime) {
       const res = await fetch(
-        `https://api.modarchive.org/downloads.php?moduleid=${mod.id}`,
-      );
+        `https://api.modarchive.org/downloads.php?moduleid=${mod.id}`
+        );
       const blob = await res.blob();
       await mods.file(`${mod.title || mod.id}.mod`, blob, { binary: true });
     }
@@ -401,7 +401,7 @@ function Player({ sharedTrackId, backSideContent, latestId, sharedTrackUrl }) {
                 <a href="#">Favorite Mods</a>
               </h2>
               <div className={styles.downloadAll}>
-                <DownloadButton
+              <DownloadButton
                   onClick={downloadFavoriteMods}
                   height="25"
                   width="25"
