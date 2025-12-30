@@ -19,11 +19,11 @@ import { useKeyPress } from "../hooks";
 const MOBILE_UA_REGEX =
   /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
 
-function Index({ trackId, backSideContent, latestId }) {
+function Index({ trackId, backSideContent, latestId, trackUrl }) {
   const [start, setStart] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
   const [randomMsg, setRandomMsg] = React.useState(
-    getRandomFromArray(getRandomInt(0, 158) ? MESSAGES : EE_MESSAGES)
+    getRandomFromArray(getRandomInt(0, 158) ? MESSAGES : EE_MESSAGES),
   );
 
   const getMessage = () => {
@@ -49,14 +49,13 @@ function Index({ trackId, backSideContent, latestId }) {
   }, []);
 
   React.useEffect(() => {
-    if (sessionStorage.getItem("refresh") === "true"){
-      setRandomMsg(getRandomFromArray(REFRESH_MESSAGES))
+    if (sessionStorage.getItem("refresh") === "true") {
+      setRandomMsg(getRandomFromArray(REFRESH_MESSAGES));
     } else {
-      sessionStorage.setItem("refresh", "true")
+      sessionStorage.setItem("refresh", "true");
     }
-    document.getElementById(
-      "app"
-    ).style.backgroundImage = `url('/images/${getRandomFromArray(BG_IMAGES)}')`;
+    document.getElementById("app").style.backgroundImage =
+      `url('/images/${getRandomFromArray(BG_IMAGES)}')`;
   }, []);
 
   if (start) {
@@ -70,6 +69,7 @@ function Index({ trackId, backSideContent, latestId }) {
             sharedTrackId={trackId}
             backSideContent={backSideContent}
             latestId={latestId}
+            sharedTrackUrl={trackUrl}
           />
           <Footer />
         </div>
@@ -112,7 +112,7 @@ Index.getInitialProps = async ({ query }) => {
     "https://modarchive.org/rss.php?request=uploads",
     {
       method: "GET",
-    }
+    },
   );
   const json = await gh_req.json();
   const rss = await rss_req.text();
@@ -126,6 +126,7 @@ Index.getInitialProps = async ({ query }) => {
     trackId: query.trackId,
     backSideContent: json.data?.repository?.content?.text,
     latestId,
+    trackUrl: query.url,
   };
 };
 
